@@ -51,7 +51,7 @@ export default function AdminDashboard() {
 
 function EmployeesTab({ employees, reload }) {
   const emptyForm = {
-    name: '', email: '', password: '', employeeCode: '', department: '', designation: '', dateOfJoining: '', role: 'employee'
+    name: '', email: '', password: '', employeeCode: '', department: '', designation: '', dateOfJoining: '', currentSalary: '', role: 'employee'
   };
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
@@ -130,6 +130,12 @@ function EmployeesTab({ employees, reload }) {
               <input type="date" value={form.dateOfJoining} onChange={(e) => setForm({ ...form, dateOfJoining: e.target.value })} />
             </label>
             <label className="field">
+              <span>Current Salary</span>
+              <input type="number" min="0" step="1000" value={form.currentSalary} onChange={(e) => setForm({ ...form, currentSalary: e.target.value })} />
+            </label>
+          </div>
+          <div className="field-row">
+            <label className="field">
               <span>Role</span>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
                 <option value="employee">Employee</option>
@@ -153,6 +159,7 @@ function EmployeesTab({ employees, reload }) {
               <th>Name</th>
               <th>Code</th>
               <th>Dept</th>
+              <th>Salary</th>
               <th>Role</th>
               <th></th>
             </tr>
@@ -166,6 +173,7 @@ function EmployeesTab({ employees, reload }) {
                 </td>
                 <td>{emp.employeeCode}</td>
                 <td>{emp.department || '—'}</td>
+                <td>{emp.currentSalary ?? emp.netSalary ?? '—'}</td>
                 <td><span className={`badge role-${emp.role}`}>{emp.role}</span></td>
                 <td>
                   <button className="btn btn-ghost btn-sm btn-danger" onClick={() => handleDelete(emp.id)}>

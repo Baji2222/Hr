@@ -20,7 +20,7 @@ router.get('/employees', (req, res) => {
 });
 
 router.post('/employees', (req, res) => {
-  const { name, email, password, employeeCode, department, designation, dateOfJoining, role } = req.body || {};
+  const { name, email, password, employeeCode, department, designation, dateOfJoining, role, currentSalary } = req.body || {};
   if (!name || !email || !password || !employeeCode) {
     return res.status(400).json({ error: 'name, email, password and employeeCode are required' });
   }
@@ -31,6 +31,7 @@ router.post('/employees', (req, res) => {
   if (db.users.some(u => u.employeeCode === employeeCode)) {
     return res.status(409).json({ error: 'An employee with this employee code already exists' });
   }
+  const normalizedSalary = currentSalary === undefined || currentSalary === '' ? '' : Number(currentSalary);
   const user = {
     id: nextId(db, 'users'),
     name,
@@ -40,6 +41,8 @@ router.post('/employees', (req, res) => {
     department: department || '',
     designation: designation || '',
     dateOfJoining: dateOfJoining || '',
+    currentSalary: normalizedSalary,
+    netSalary: normalizedSalary === '' ? undefined : normalizedSalary,
     role: role === 'admin' ? 'admin' : 'employee',
     createdAt: new Date().toISOString()
   };
@@ -61,11 +64,20 @@ router.put('/employees/:id', (req, res) => {
   const user = db.users.find(u => u.id === Number(req.params.id));
   if (!user) return res.status(404).json({ error: 'Employee not found' });
 
-  const { name, department, designation, dateOfJoining, role, password } = req.body || {};
+  const { name, department, designation, dateOfJoining, role, password, currentSalary } = req.body || {};
   if (name) user.name = name;
   if (department !== undefined) user.department = department;
   if (designation !== undefined) user.designation = designation;
   if (dateOfJoining !== undefined) user.dateOfJoining = dateOfJoining;
+  if (currentSalary !== undefined) {
+    const normalizedSalary = currentSalary === '' ? '' : Number(currentSalary);
+    user.currentSalary = normalizedSalary;
+    if (normalizedSalary === '') {
+      delete user.netSalary;
+    } else {
+      user.netSalary = normalizedSalary;
+    }
+  }
   if (role) user.role = role === 'admin' ? 'admin' : 'employee';
   if (password) user.passwordHash = bcrypt.hashSync(password, 10);
 
